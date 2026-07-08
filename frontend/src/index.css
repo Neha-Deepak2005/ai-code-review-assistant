@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-ink text-paper font-sans antialiased;
+}
+
+/* Reusable bits */
+.field {
+  @apply w-full rounded-md bg-ink border border-edge px-3 py-2 text-sm
+         placeholder-mist focus:outline-none focus:border-accent
+         focus:ring-1 focus:ring-accent;
+}
+.btn {
+  @apply inline-flex items-center gap-2 rounded-md bg-accent text-ink
+         font-medium text-sm px-4 py-2 hover:opacity-90 transition
+         disabled:opacity-40 disabled:cursor-not-allowed;
+}
+.btn-ghost {
+  @apply inline-flex items-center gap-2 rounded-md border border-edge
+         text-mist text-sm px-3 py-1.5 hover:text-paper hover:border-mist transition;
+}
+/* Section labels styled as code comments — the app's signature */
+.comment-label {
+  @apply font-mono text-xs text-mist tracking-wide select-none;
+}
+.comment-label::before { content: "// "; }
