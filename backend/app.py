@@ -29,6 +29,8 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     from routes.upload import upload_bp
     app.register_blueprint(upload_bp, url_prefix="/api/upload")
+    from routes.review import review_bp
+    app.register_blueprint(review_bp, url_prefix="/api/reviews")
 
     # --- Health check: your first working endpoint ---
     @app.route("/api/health")
@@ -51,4 +53,3 @@ app = create_app()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
- 
