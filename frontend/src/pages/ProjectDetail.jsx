@@ -1,8 +1,9 @@
-// Day 7 — the report view.
+// Day 7 — the report view.  Day 10 — + AI documentation generator.
 //
 // Flow: load project -> user clicks "Run analysis" -> POST /reviews/run/:id
-// -> backend runs pylint + bandit + radon -> we render score, metrics,
-// severity distribution, and the findings table.
+// -> backend runs pylint + bandit + radon + AI review -> we render score,
+// metrics, severity distribution, and the findings table.
+// "Generate docs" -> POST /docs/generate/:id -> Markdown docs panel.
 
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
@@ -58,6 +59,12 @@ export default function ProjectDetail() {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");  // severity filter
 
+  // Day 10 — documentation generator state
+  const [docs, setDocs] = useState("");
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docsError, setDocsError] = useState("");
+  const [copied, setCopied] = useState(false);
+
   const load = async () => {
     try {
       const { data } = await api.get(`/upload/projects/${id}`);
@@ -91,6 +98,29 @@ export default function ProjectDetail() {
     }
   };
 
+  const generateDocs = async () => {
+    setDocsError("");
+    setDocsLoading(true);
+    try {
+      const { data } = await api.post(`/docs/generate/${id}`);
+      setDocs(data.documentation);
+    } catch (err) {
+      setDocsError(err.response?.data?.error || "Documentation generation failed.");
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+
+  const copyDocs = async () => {
+    try {
+      await navigator.clipboard.writeText(docs);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setDocsError("Could not copy to clipboard.");
+    }
+  };
+
   const findings = review?.findings || [];
   const counts = SEV_ORDER.reduce((acc, s) => {
     acc[s] = findings.filter((f) => f.severity === s).length;
@@ -109,19 +139,51 @@ export default function ProjectDetail() {
             {files.length} file(s): {files.join(", ")}
           </p>
         </div>
-        <button className="btn" onClick={runAnalysis} disabled={running}>
-          {running ? "Analyzing..." : review ? "Re-run analysis" : "Run analysis"}
-        </button>
+        <div className="flex gap-3">
+          <button className="btn" onClick={generateDocs} disabled={docsLoading || running}>
+            {docsLoading ? "Writing docs..." : "Generate docs"}
+          </button>
+          <button className="btn" onClick={runAnalysis} disabled={running || docsLoading}>
+            {running ? "Analyzing..." : review ? "Re-run analysis" : "Run analysis"}
+          </button>
+        </div>
       </div>
 
       {error && <p className="text-bad text-sm font-mono mb-6">{error}</p>}
+      {docsError && <p className="text-bad text-sm font-mono mb-6">{docsError}</p>}
 
       {running && (
-        <div className="border border-edge rounded-lg p-10 text-center">
+        <div className="border border-edge rounded-lg p-10 text-center mb-6">
           <p className="font-mono text-mist animate-pulse">
-            Running pylint, bandit and radon...
+            Running pylint, bandit, radon and AI review...
           </p>
         </div>
+      )}
+
+      {docsLoading && (
+        <div className="border border-edge rounded-lg p-10 text-center mb-6">
+          <p className="font-mono text-mist animate-pulse">
+            The AI is reading your code and writing documentation...
+          </p>
+        </div>
+      )}
+
+      {/* Day 10 — generated documentation panel */}
+      {!docsLoading && docs && (
+        <section className="bg-panel border border-edge rounded-lg mb-6 overflow-hidden">
+          <div className="flex items-center justify-between p-4 pb-0">
+            <p className="comment-label">generated documentation</p>
+            <button
+              onClick={copyDocs}
+              className="font-mono text-xs text-accent hover:underline"
+            >
+              {copied ? "copied ✓" : "copy"}
+            </button>
+          </div>
+          <pre className="whitespace-pre-wrap text-sm leading-relaxed p-4 font-sans">
+            {docs}
+          </pre>
+        </section>
       )}
 
       {!running && !review && !error && (
