@@ -31,7 +31,7 @@ export default function Dashboard() {
   };
   const loadReviews = async () => {
     try {
-      const { data } = await api.get("/review/");
+      const { data } = await api.get("/reviews/");
       setReviews(data.reviews);
     } catch (err) {
       console.error(err);
@@ -201,7 +201,6 @@ export default function Dashboard() {
         ) : (
           <ul className="space-y-3">
             {reviews.map((review) => {
-              console.log(review);
               return (
                 <li
                   key={review.id}
