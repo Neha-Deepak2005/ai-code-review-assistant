@@ -95,4 +95,7 @@ def list_reviews():
         .order_by(Review.created_at.desc())
         .all()
     )
-    return jsonify({"reviews": [r.to_dict() for r in reviews]}), 200
+    print("Number of reviews:", len(reviews))
+    data = [r.to_dict() for r in reviews]
+    print(data)
+    return jsonify({"reviews": data}), 200

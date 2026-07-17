@@ -8,6 +8,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const [projects, setProjects] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -28,8 +29,19 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+  const loadReviews = async () => {
+    try {
+      const { data } = await api.get("/review/");
+      setReviews(data.reviews);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  useEffect(() => { loadProjects(); }, []);
+  useEffect(() => {
+    loadProjects();
+    loadReviews();
+  }, []);
 
   const submit = async () => {
     setError("");
@@ -175,6 +187,49 @@ export default function Dashboard() {
                 </div>
               </li>
             ))}
+          </ul>
+        )}
+      </section>
+      <section className="mt-10">
+        <p className="comment-label mb-4">
+          Review History
+        </p>
+        {reviews.length === 0 ? (
+          <div className="border border-dashed border-edge rounded-lg p-8 text-center">
+            No reviews yet.
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {reviews.map((review) => {
+              console.log(review);
+              return (
+                <li
+                  key={review.id}
+                  className="bg-panel border border-edge rounded-lg p-4 flex justify-between items-center">
+                  <div>
+                    <h3 className="font-medium">
+                      Review #{review.id}
+                    </h3>
+                    <p className="text-xs text-mist">
+                      Score : {review.review_score}
+                    </p>
+                    <p className="text-xs text-mist">
+                      Status : {review.status}
+                    </p>
+                    <p className="text-xs text-mist">
+                      {new Date(review.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <button
+                    className="btn"
+                    onClick={() =>
+                      navigate(`/projects/${review.project_id}?review=${review.id}`)
+                    }>
+                    View
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
